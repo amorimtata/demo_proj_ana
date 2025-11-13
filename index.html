@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infográfico: Arquitetura de Automação FGTS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .flow-step {
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        .flow-arrow {
+            font-size: 2.5rem;
+            line-height: 1;
+            color: #9CA3AF;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            height: 100%;
+        }
+        .terminal {
+            background-color: #1E293B;
+            color: #E2E8F0;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            overflow-x: auto;
+        }
+        .terminal-line {
+            white-space: nowrap;
+        }
+        .pm2-app { color: #34D399; }
+        .pm2-status { color: #60A5FA; }
+        .pm2-info { color: #FCD34D; }
+        .pm2-data { color: #F87171; }
+        .pm2-sep { color: #6B7280; }
+        
+        .printable-content {
+            display: none;
+        }
+        
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            .no-print {
+                display: none;
+            }
+            .print-container {
+                display: block !important;
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                margin: 0;
+                width: 100%;
+            }
+            .printable-content {
+                display: block;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: white;
+                z-index: 9999;
+                padding: 2rem;
+            }
+            h1, h2, h3 {
+                color: #000 !important;
+            }
+            .card {
+                box-shadow: none;
+                border: 1px solid #e5e7eb;
+                page-break-inside: avoid;
+            }
+            .text-gray-600, .text-gray-700 {
+                color: #333 !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900">
+
+    <div class="printable-content">
+        <h1 class="text-3xl font-bold text-black mb-4">Relatório de Gestão FGTS</h1>
+        <p class="text-black mb-6">Emitido em: <span id="print-date"></span></p>
+        
+        <div class="card mb-6">
+            <h2 class="text-2xl font-semibold text-black mb-4">Resumo de Extrações</h2>
+            <p class="text-black">Este relatório contém o status atual das extrações de guias de FGTS e o fluxo de aprovação pendente.</p>
+        </div>
+        
+        <div class="card">
+            <h3 class="text-xl font-semibold text-black mb-4">Comprovantes Pendentes</h3>
+            <ul class="list-disc list-inside text-black">
+                <li>Colaborador: Thallyta Amorim (Competência: 10/2025) - Aguardando pagamento.</li>
+                <li>Colaborador: Ana Luiza (Competência: 10/2025) - Aguardando pagamento.</li>
+                <li>Colaborador: Larissa (Competência: 10/2025) - Pagamento aprovado.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        
+        <header class="text-center mb-12 md:mb-16">
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-600 mb-4">Arquitetura de Automação FGTS</h1>
+            <p class="text-xl md:text-2xl text-gray-700">Uma visão completa da solução, do Fluig ao Robô.</p>
+        </header>
+
+        <section class="mb-12 md:mb-16 no-print">
+            <h2 class="text-3xl font-bold text-center mb-8">O Ciclo de Automação (5 Passos)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-stretch">
+                
+                <div class="flow-step card text-center border-t-4 border-blue-500">
+                    <div class="text-5xl mb-3">🖥️</div>
+                    <h3 class="text-lg font-semibold mb-2">1. Disparo no Fluig</h3>
+                    <p class="text-sm text-gray-600">Usuário seleciona um colaborador e solicita a extração da guia (ex: Thallyta Amorim).</p>
+                </div>
+
+                <div class="flow-step card text-center border-t-4 border-yellow-500">
+                    <div class="text-5xl mb-3">📤</div>
+                    <h3 class="text-lg font-semibold mb-2">2. Fila AWS SQS</h3>
+                    <p class="text-sm text-gray-600">Um job (JSON) com os dados do colaborador é enviado para a fila de processamento.</p>
+                </div>
+                
+                <div class="flow-step card text-center border-t-4 border-green-500">
+                    <div class="text-5xl mb-3">🤖</div>
+                    <h3 class="text-lg font-semibold mb-2">3. K8s Workers</h3>
+                    <p class="text-sm text-gray-600">Um worker (Pod) disponível consome o job da fila e inicia a automação no portal da Caixa.</p>
+                </div>
+                
+                <div class="flow-step card text-center border-t-4 border-red-500">
+                    <div class="text-5xl mb-3">💾</div>
+                    <h3 class="text-lg font-semibold mb-2">4. Armazenamento</h3>
+                    <p class="text-sm text-gray-600">PDFs são salvos no S3; metadados (valor, link) vão para o Banco SQL.</p>
+                </div>
+
+                <div class="flow-step card text-center border-t-4 border-purple-500">
+                    <div class="text-5xl mb-3">📊</div>
+                    <h3 class="text-lg font-semibold mb-2">5. Visualização no Fluig</h3>
+                    <p class="text-sm text-gray-600">O Fluig lê o banco, exibe o status "Concluído" e o link para o PDF da guia.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="mb-12 md:mb-16 no-print print-container">
+            <h2 class="text-3xl font-bold text-center mb-8">O Poder do Processamento Paralelo</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <div class="card border-l-4 border-red-500">
+                    <h3 class="text-2xl font-semibold mb-4 text-red-600">Processo Manual (Serial)</h3>
+                    <p class="text-gray-600 mb-4">Um único operador executa uma tarefa de cada vez, em sequência. 1000 colaboradores levam dias.</p>
+                    <div class="text-gray-700 space-y-2">
+                        <p>Extrair Guia Colab. 1... (2 min)</p>
+                        <p>Extrair Guia Colab. 2... (2 min)</p>
+                        <p>Extrair Guia Colab. 3... (2 min)</p>
+                        <p class="font-semibold text-gray-500">... Colab. 1000 ... (Total: 2000+ min)</p>
+                        <p class="text-2xl font-bold text-red-600 mt-4">Tempo Total: Dias</p>
+                    </div>
+                </div>
+
+                <div class="card border-l-4 border-green-500">
+                    <h3 class="text-2xl font-semibold mb-4 text-green-600">Processo Automatizado (Paralelo)</h3>
+                    <p class="text-gray-600 mb-4">A fila SQS distribui o trabalho para um pool fixo de robôs (Pods K8s) que executam ao mesmo tempo.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="bg-yellow-100 p-3 rounded-lg">
+                            <h4 class="font-semibold text-yellow-800">📤 Fila SQS (fgts-extrac-jobs)</h4>
+                            <p class="text-sm text-yellow-700">Jobs na fila: 100</p>
+                            <p class="text-sm text-yellow-700">Em Voo: 10</p>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-lg col-span-2">
+                            <h4 class="font-semibold text-blue-800">🤖 Workers (Pods K8s)</h4>
+                            <p class="text-sm text-blue-700">Workers Ativos: 10</p>
+                            <p class="text-sm text-blue-700">(Pool de workers fixo)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="terminal">
+                        <div class="terminal-line"><span class="pm2-app">0|fgts-scrap</span> | <span class="pm2-status">Consumindo Job</span><span class="pm2-data"> (Colab. 102)</span></div>
+                        <div class="terminal-line"><span class="pm2-app">1|fgts-scrap</span> | <span class="pm2-status">Consumindo Job</span><span class="pm2-data"> (Colab. 305)</span></div>
+                        <div class="terminal-line"><span class="pm2-app">0|fgts-scrap</span> | <span class="pm2-status">S3 Upload OK</span><span class="pm2-data"> (Colab. 102)</span></div>
+                        <div class="terminal-line"><span class="pm2-app">0|fgts-scrap</span> | <span class="pm2-status">Getting messages for fgts-extrac-jobs queue</span></div>
+                        <div class="terminal-line"><span class="pm2-app">0|fgts-scrap</span> | <span class="pm2-sep">- - - - - - - - - - - - - - - - - - - - - - - - - -</span></div>
+                        <div class="terminal-line"><span class="pm2-app">0|fgts-scrap</span> | <span class="pm2-info">Não tem mensagem</span></div>
+                        <div class="terminal-line"><span class="pm2-app">0|fgts-scrap</span> | <span class="pm2-sep">- - - - - - - - - - - - - - - - - - - - - - - - - -</span></div>
+                        <div class="terminal-line"><span class="pm2-app">1|fgts-scrap</span> | <span class="pm2-status">S3 Upload OK</span><span class="pm2-data"> (Colab. 305)</span></div>
+                        <div class="terminal-line"><span class="pm2-app">1|fgts-scrap</span> | <span class="pm2-status">Getting messages for fgts-extrac-jobs queue</span></div>
+                        <div class="terminal-line"><span class="pm2-app">1|fgts-scrap</span> | <span class="pm2-sep">- - - - - - - - - - - - - - - - - - - - - - - - - -</span></div>
+                        <div class="terminal-line"><span class="pm2-app">1|fgts-scrap</span> | <span class="pm2-info">Não tem mensagem</span></div>
+                    </div>
+                    
+                    <p class="text-2xl font-bold text-green-600 mt-4">Tempo Total: &lt; 1 Hora</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-12 md:mb-16 no-print print-container"> <h2 class="text-3xl font-bold text-center mb-8">Demonstração: A Interface de Gestão no Fluig</h2>
+            <div class="card p-0 overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-2xl font-semibold mb-4">Painel de Controle FGTS</h3>
+                    <p class="text-gray-600 mb-6">Esta é a visão de ideia do usuário no Fluig, onde ele gerencia todo o processo após a automação.</p>
+                </div>
+                
+                <div class="bg-gray-50 p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-2">
+                        <h4 class="font-semibold text-lg mb-4">Comprovantes e Status</h4>
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-200">
+                                <tr>
+                                    <th class="p-3">Colaborador</th>
+                                    <th class="p-3">Competência</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b">
+                                    <td class="p-3">Cleidi</td>
+                                    <td class="p-3">10/2025</td>
+                                    <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Processado</span></td>
+                                    <td class="p-3"><a href="#" class="text-blue-600 hover:underline">Ver PDF</a></td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-3">Ana Luiza</td>
+                                    <td class="p-3">10/2025</td>
+                                    <td class="p-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Processado</span></td>
+                                    <td class="p-3"><a href="#" class="text-blue-600 hover:underline">Ver PDF</a></td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-3">Larissa</td>
+                                    <td class="p-3">10/2025</td>
+                                    <td class="p-3"><span class="bg-green-100 text-green-800 px-2 py-1 rounded-full">Pago</span></td>
+                                    <td class="p-3"><a href="#" class="text-blue-600 hover:underline">Ver PDF</a></td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-3">Kelly Nass</td>
+                                    <td class="p-3">10/2025</td>
+                                    <td class="p-3"><span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Na Fila</span></td>
+                                    <td class="p-3 text-gray-500">Processando...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2">Ações e Relatórios</h4>
+                            <p class="text-sm text-gray-600 mb-3">Transfira responsabilidades ou gere relatórios completos.</p>
+                            <button class="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+                                Anexar Comprovante de Pagto.
+                            </button>
+                        </div>
+                        <div>
+                            <button class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                                → Transferir para Financeiro
+                            </button>
+                        </div>
+                        <div>
+                            <button id="printButton" class="w-full bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors">
+                                🖨️ Imprimir Relatório
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mt-12 md:mt-16 mb-12 md:mb-16 no-print print-container"> <h2 class="text-3xl font-bold text-center mb-8">Stack de Tecnologia Sugerida</h2>
+            <div class="card p-0 overflow-hidden">
+                <table class="w-full text-left">
+                    <tbody class="divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 align-top w-1/4">Frontend</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 w-1/3">Interface de Gestão</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Fluig</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 align-top w-1/4" rowspan="6">Backend</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 w-1/3">Orquestração</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Kubernetes (K8s)</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 w-1/3">Containerização</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Docker</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 w-1/3">Fila de Jobs</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">AWS SQS</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 w-1/3">Armazenamento (Arquivos)</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Amazon S3</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 w-1/3">Armazenamento (Metadados)</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">PostgreSQL / MySQL</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 w-1/3">Gestão de Segredos</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">AWS Secrets Manager</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 align-top w-1/4" rowspan="3">Workers</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 w-1/3">Linguagem</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Node.js </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 w-1/3">Automação Web / Extração JSON</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Puppeteer</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 w-1/3">Gerenciador de Processo</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">PM2</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </div> <script>
+        document.getElementById('printButton').addEventListener('click', function() {
+            document.getElementById('print-date').textContent = new Date().toLocaleString('pt-BR');
+            window.print();
+        });
+    </script>
+
+</body>
+</html>
